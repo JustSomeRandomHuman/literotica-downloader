@@ -1,10 +1,10 @@
-#i dont know which of these are still needed, i've added and removed stuff from this script when it didnt work.
-import requests
+from requests import get as requests_get
 from bs4 import BeautifulSoup
-import os
-import re
-import time
-import sys
+from os import makedirs as os_makedirs
+from os import path as os_path
+from re import sub as re_sub
+from time import sleep as time_sleep
+from sys import exit as sys_exit
 
 def gettext(soup): #gets the main text.
   text = soup.find('div', class_='aa_ht') #look for the div that has all the writing in it. it has the class "aa_ht".
@@ -18,7 +18,7 @@ def getnextpage(soup): #gets the url to the next page in the story.
     nextlink = 'https://www.literotica.com' + soup.find(title="Next Page").get('href') #take the subdomain from the next page button and append to Literotica URL.
   except:
     print('Done.') 
-    sys.exit(1) #if there's is no more subdomain in the next button, stop running.
+    sys_exit(1) #if there's is no more subdomain in the next button, stop running.
 
   return nextlink
 
@@ -40,7 +40,7 @@ def add_leading_zero_to_single_digits(text):
     # \b ensures whole word matching for digits, preventing partial matches
     # (?<!\d) ensures no digit before
     # (?!\d) ensures no digit after
-    return re.sub(r'(?<!\d)\d(?!\d)', replace_single_digit, text)
+    return re_sub(r'(?<!\d)\d(?!\d)', replace_single_digit, text)
 
 #needed for anti bot stuff vvv
 headers = {
@@ -78,24 +78,24 @@ while i != 99: #increase this if the story you're downloading has over 99 pages.
 
   #where the magic happens vvv
   print("Reading: " + url)
-  response = requests.get(url, timeout=10, headers=headers)
+  response = requests_get(url, timeout=10, headers=headers)
   soup = BeautifulSoup(response.content, 'lxml')
   body = gettext(soup)
     
   filename = add_leading_zero_to_single_digits((((url.split('/'))[-1]).replace('?page=', '_p'))) #bruh
-  fullpath = os.path.join('output', getauthor(soup), foldername) #assemble the path.
+  fullpath = os_path.join('output', getauthor(soup), foldername) #assemble the path.
   
-  if not os.path.exists(fullpath):
-    os.makedirs(fullpath) #make the output folder.
+  if not os_path.exists(fullpath):
+    os_makedirs(fullpath) #make the output folder.
 
-  with open(os.path.join(fullpath, filename) + '.html', 'w') as file:
+  with open(os_path.join(fullpath, filename) + '.html', 'w') as file:
     file.write(html_top + body + html_bottom) #bamn
-    print("Output: " + os.path.abspath(os.path.join(fullpath, filename) + ".html")) #show the absolute location of the output file.
+    print("Output: " + os_path.abspath(os_path.join(fullpath, filename) + ".html")) #show the absolute location of the output file.
     print("")
 
 
   if i == 1:#only make the css file once, not on each loop.
-    with open(os.path.join(fullpath, "styles.css"), "w") as cssfile:
+    with open(os_path.join(fullpath, "styles.css"), "w") as cssfile:
       
       #edit this vvv to change the css file automatically added to each stories' folder.
       css = """
@@ -110,6 +110,6 @@ div {
   next_url = getnextpage(soup)
   url = next_url
   i += 1
-  #time.sleep(1)
+  #time_sleep(1)
 
 
